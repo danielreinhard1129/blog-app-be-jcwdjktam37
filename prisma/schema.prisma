@@ -1,0 +1,105 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Sample {
+  id        Int      @id @default(autoincrement())
+  name      String
+  image     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("samples")
+}
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  role      Role     @default(USER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  transactions Transaction[]
+  blogs        Blog[]
+
+  @@map("users")
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+model Ticket {
+  id        Int       @id @default(autoincrement())
+  name      String
+  price     Int
+  stock     Int
+  deletedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  transactionDetails TransactionDetail[]
+
+  @@map("tickets")
+}
+
+model Transaction {
+  id           Int               @id @default(autoincrement())
+  uuid         String            @unique @default(uuid())
+  userId       Int
+  user         User              @relation(fields: [userId], references: [id])
+  status       TransactionStatus @default(WAITING_FOR_PAYMENT)
+  paymentProof String?
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
+
+  transactionDetails TransactionDetail[]
+
+  @@map("transactions")
+}
+
+enum TransactionStatus {
+  WAITING_FOR_PAYMENT
+  WAITING_FOR_CONFIRMATION
+  PAID
+  REJECT
+  EXPIRED
+}
+
+model TransactionDetail {
+  id            Int         @id @default(autoincrement())
+  transactionId Int
+  transaction   Transaction @relation(fields: [transactionId], references: [id])
+  ticketId      Int
+  ticket        Ticket      @relation(fields: [ticketId], references: [id])
+  qty           Int
+  price         Int
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@map("transaction_details")
+}
+
+model Blog {
+  id          Int      @id @default(autoincrement())
+  slug        String   @unique
+  title       String   @unique
+  description String   @db.Text
+  thumbnail   String
+  content     String   @db.Text
+  category    String
+  userId      Int
+  user        User     @relation(fields: [userId], references: [id])
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("blogs")
+}

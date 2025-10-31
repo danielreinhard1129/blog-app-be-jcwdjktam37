@@ -1,0 +1,29 @@
+services:
+  db:
+    image: postgres
+    container_name: postgres_container1
+    restart: always
+    environment:
+      - POSTGRES_PASSWORD=admin
+    volumes:
+      - ./docker/postgres1:/var/lib/postgresql/18/docker
+    ports:
+      - '6543:5432'
+
+  db_testing:
+    image: postgres
+    container_name: postgres_container2
+    environment:
+      - POSTGRES_PASSWORD=admin
+    ports:
+      - '6544:5432'
+
+  cache: 
+    image: redis
+    container_name: redis_container
+    restart: always
+    ports:
+      - '6379:6379'
+    volumes:
+      - ./docker/redis:/data
+
